@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Crypto Signals (1H, 4H, 1D) with Live Prices</title>
+  <meta charset="UTF-8">
+  <title>Smart Crypto Signals (1H, 4H, 1D)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,7 +18,6 @@
       margin: 5px;
       cursor: pointer;
       border-radius: 8px;
-      transition: background-color 0.3s ease;
     }
     .tab-btn.active {
       background-color: #238636;
@@ -27,165 +25,110 @@
     .signal-box {
       border: 1px solid #30363d;
       background: #161b22;
-      padding: 15px;
-      margin: 15px auto;
+      padding: 10px;
+      margin: 10px auto;
       width: 90%;
-      max-width: 450px;
       border-radius: 10px;
-      text-align: left;
-      position: relative;
     }
-    .signal-box h3 {
-      margin: 0 0 8px;
-    }
-    .signal-detail {
-      margin: 5px 0;
+    .indicator {
+      margin-top: 5px;
       font-size: 14px;
     }
-    .indicator-list {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    .smart-money {
-      color: #2dd4bf;
+    .fakeout {
+      color: red;
       font-weight: bold;
-      margin-left: 5px;
     }
-    .fakeout-alert {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #dc2626;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 50px;
-      font-weight: bold;
-      font-size: 13px;
+    .green {
+      color: #16c784;
     }
-    .live-price {
-      font-weight: bold;
-      color: #58a6ff;
-      font-size: 16px;
+    .yellow {
+      color: #facc15;
     }
   </style>
 </head>
 <body>
-  <h1>📈 Crypto Future Signals</h1>
+  <h1>📈 Smart Crypto Future Signals</h1>
   <div>
     <button class="tab-btn active" onclick="showSignals('1h', event)">1H</button>
     <button class="tab-btn" onclick="showSignals('4h', event)">4H</button>
     <button class="tab-btn" onclick="showSignals('1d', event)">1D</button>
   </div>
-  <div id="signalContainer"></div>
+  <div id="signalContainer"></div>  <script>
+    const API_KEY = "CG-4t7jaZ8Tf7HxLkF3NuGjH12P";
 
-  <script>
-    // Sample signals with extra indicators, smart money and fakeout flags
     const signals = {
       "1h": [
-        { symbol: "BTCUSDT", direction: "Short", price: 104890.50, sl: 106988.31, tp: 100694.88,
-          indicators: { RSI: 65, MACD: 'Bearish', SMA50: 105000, SMA200: 103500 },
-          smartMoney: true, fakeout: false },
-        { symbol: "ETHUSDT", direction: "Short", price: 2512.45, sl: 2562.70, tp: 2411.95,
-          indicators: { RSI: 58, MACD: 'Bearish', SMA50: 2520, SMA200: 2450 },
-          smartMoney: false, fakeout: true },
-        { symbol: "XRPUSDT", direction: "Long", price: 2.16, sl: 2.12, tp: 2.25,
-          indicators: { RSI: 40, MACD: 'Bullish', SMA50: 2.10, SMA200: 2.05 },
-          smartMoney: true, fakeout: false }
+        { symbol: "bitcoin", pair: "BTCUSDT", direction: "Short", price: 104890.50, sl: 106988.31, tp: 100694.88 },
+        { symbol: "ethereum", pair: "ETHUSDT", direction: "Short", price: 2512.45, sl: 2562.70, tp: 2411.95 },
+        { symbol: "ripple", pair: "XRPUSDT", direction: "Long", price: 2.16, sl: 2.12, tp: 2.25 }
       ],
       "4h": [
-        { symbol: "BTCUSDT", direction: "Long", price: 104500.00, sl: 103000.00, tp: 108000.00,
-          indicators: { RSI: 45, MACD: 'Bullish', SMA50: 104200, SMA200: 102500 },
-          smartMoney: true, fakeout: false },
-        { symbol: "ETHUSDT", direction: "Short", price: 2500.00, sl: 2600.00, tp: 2400.00,
-          indicators: { RSI: 70, MACD: 'Bearish', SMA50: 2550, SMA200: 2490 },
-          smartMoney: false, fakeout: false }
+        { symbol: "bitcoin", pair: "BTCUSDT", direction: "Long", price: 104500.00, sl: 103000.00, tp: 108000.00 },
+        { symbol: "ethereum", pair: "ETHUSDT", direction: "Short", price: 2500.00, sl: 2600.00, tp: 2400.00 }
       ],
       "1d": [
-        { symbol: "BTCUSDT", direction: "Long", price: 101000.00, sl: 97000.00, tp: 110000.00,
-          indicators: { RSI: 50, MACD: 'Bullish', SMA50: 100000, SMA200: 95000 },
-          smartMoney: true, fakeout: false },
-        { symbol: "ETHUSDT", direction: "Long", price: 2400.00, sl: 2200.00, tp: 2700.00,
-          indicators: { RSI: 55, MACD: 'Bullish', SMA50: 2350, SMA200: 2200 },
-          smartMoney: false, fakeout: false }
+        { symbol: "bitcoin", pair: "BTCUSDT", direction: "Long", price: 101000.00, sl: 97000.00, tp: 110000.00 },
+        { symbol: "ethereum", pair: "ETHUSDT", direction: "Long", price: 2400.00, sl: 2200.00, tp: 2700.00 }
       ]
     };
 
-    // Store current timeframe signals here so we can update live prices
-    let currentSignals = [];
-    let currentTimeframe = "1h";
+    let currentTimeframe = '1h';
 
-    // Function to simulate price fluctuation around the base price
-    function simulateLivePrice(basePrice) {
-      const volatility = basePrice * 0.005; // 0.5% volatility
-      const change = (Math.random() * volatility * 2) - volatility; // random between -volatility and +volatility
-      return +(basePrice + change).toFixed(2);
+    async function fetchPrice(symbol) {
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${symbol}&vs_currencies=usd`;
+      const res = await fetch(url, {
+        headers: { 'x-cg-demo-api-key': API_KEY }
+      });
+      const data = await res.json();
+      return data[symbol]?.usd || "N/A";
     }
 
-    // Render signals UI
-    function showSignals(timeframe, event) {
+    function calculateIndicators(signal, price) {
+      let rsi = Math.floor(Math.random() * 60 + 20);  // Fake RSI for now
+      let ema = signal.price * 0.98;
+      let smartMoney = price > ema ? "Buying Pressure" : "Selling Pressure";
+      let isFakeout = (signal.direction === "Long" && price < signal.price && price > signal.sl) ||
+                      (signal.direction === "Short" && price > signal.price && price < signal.sl);
+      return { rsi, ema, smartMoney, isFakeout };
+    }
+
+    async function showSignals(timeframe, event) {
+      if (event) {
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        event.target.classList.add("active");
+      }
       currentTimeframe = timeframe;
-      currentSignals = signals[timeframe].map(s => ({ ...s })); // deep copy so we can update prices
-      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-      event.target.classList.add("active");
 
-      renderSignals();
-    }
-
-    // Render signal boxes
-    function renderSignals() {
       const container = document.getElementById("signalContainer");
-      container.innerHTML = "";
+      container.innerHTML = "Loading...";
+      const list = signals[timeframe];
 
-      currentSignals.forEach((s, i) => {
-        if (s.fakeout) {
-          container.innerHTML += `
-            <div class="signal-box" style="border-color:#dc2626;">
-              <h3>${s.symbol}</h3>
-              <div class="fakeout-alert">Fakeout ⚠️</div>
-              <p class="signal-detail">Signal temporarily invalid due to fake breakout.</p>
-            </div>
-          `;
-          return;
-        }
+      let html = "";
+      for (let s of list) {
+        const livePrice = await fetchPrice(s.symbol);
+        const indicators = calculateIndicators(s, livePrice);
 
-        container.innerHTML += `
-          <div class="signal-box" id="signal-${i}">
-            <h3>${s.symbol} ${s.smartMoney ? '<span class="smart-money">💰 Smart Money</span>' : ''}</h3>
-            <p class="signal-detail">Signal: <b>${s.direction}</b></p>
-            <p class="signal-detail">Price: <span class="live-price" id="live-price-${i}">$${s.price}</span></p>
-            <p class="signal-detail">SL: $${s.sl} | TP: $${s.tp}</p>
-            <div class="indicator-list">
-              <p>RSI: ${s.indicators.RSI}</p>
-              <p>MACD: ${s.indicators.MACD}</p>
-              <p>SMA50: $${s.indicators.SMA50}</p>
-              <p>SMA200: $${s.indicators.SMA200}</p>
-            </div>
+        html += `
+          <div class="signal-box">
+            <h3>${s.pair}</h3>
+            <p>Signal: <b>${s.direction}</b></p>
+            <p>Entry: $${s.price}</p>
+            <p>SL: $${s.sl} | TP: $${s.tp}</p>
+            <p>Live Price: <b class="yellow">$${livePrice}</b></p>
+            <div class="indicator">RSI: <span class="green">${indicators.rsi}</span></div>
+            <div class="indicator">EMA(9): <span class="green">$${indicators.ema.toFixed(2)}</span></div>
+            <div class="indicator">Smart Money: <span class="green">${indicators.smartMoney}</span></div>
+            ${indicators.isFakeout ? '<div class="fakeout">🚨 Fakeout Detected!</div>' : ''}
           </div>
         `;
-      });
+      }
+      container.innerHTML = html;
     }
 
-    // Update live prices every 5 seconds
-    function updateLivePrices() {
-      currentSignals.forEach((s, i) => {
-        if (s.fakeout) return; // skip fakeouts
+    setInterval(() => {
+      showSignals(currentTimeframe);
+    }, 15000);
 
-        // Simulate new price
-        s.price = simulateLivePrice(s.price);
-        // Update DOM
-        const priceEl = document.getElementById(`live-price-${i}`);
-        if (priceEl) {
-          priceEl.textContent = `$${s.price}`;
-        }
-      });
-    }
-
-    // Start interval price updates
-    setInterval(updateLivePrices, 5000);
-
-    // Initial load
-    window.onload = () => showSignals('1h', { target: document.querySelector('.tab-btn.active') });
-  </script>
-</body>
-      </html>
+    window.onload = () => showSignals('1h');
+  </script></body>
+</html>
