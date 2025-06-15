@@ -1,166 +1,191 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto Signal Tool - Pro Version</title>
+  <meta charset="UTF-8" />
+  <title>Crypto Signals (1H, 4H, 1D) with Live Prices</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #0f0f0f; color: #fff; margin: 0; padding: 20px; }
-    h1 { color: #00ffcc; }
-    .coin { background: #1a1a1a; border-radius: 8px; padding: 15px; margin: 10px 0; }
-    .signal { font-weight: bold; color: #00ffcc; }
-    .live-price { font-size: 1.2em; color: #ffcc00; }
-    .copy-btn { background: #00ffcc; color: #000; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    .tab-btn {
+      padding: 10px 15px;
+      background: #161b22;
+      color: white;
+      border: none;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+    .tab-btn.active {
+      background-color: #238636;
+    }
+    .signal-box {
+      border: 1px solid #30363d;
+      background: #161b22;
+      padding: 15px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 450px;
+      border-radius: 10px;
+      text-align: left;
+      position: relative;
+    }
+    .signal-box h3 {
+      margin: 0 0 8px;
+    }
+    .signal-detail {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .indicator-list {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .smart-money {
+      color: #2dd4bf;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .fakeout-alert {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc2626;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .live-price {
+      font-weight: bold;
+      color: #58a6ff;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-  <h1>📈 Crypto Future Signals (1H, 4H, 1D)</h1>
-  <div id="signal-container">Loading signals...</div>  <script>
-    const coins = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT", "LINKUSDT", "DOTUSDT"];
+  <h1>📈 Crypto Future Signals</h1>
+  <div>
+    <button class="tab-btn active" onclick="showSignals('1h', event)">1H</button>
+    <button class="tab-btn" onclick="showSignals('4h', event)">4H</button>
+    <button class="tab-btn" onclick="showSignals('1d', event)">1D</button>
+  </div>
+  <div id="signalContainer"></div>
 
-    function generateSignal(symbol) {
-      const directions = ["Long", "Short", "Neutral"];
-      const price = (Math.random() * 50000 + 500).toFixed(2);
-      const signal = directions[Math.floor(Math.random() * directions.length)];
-      const sl = (parseFloat(price) * (signal === "Long" ? 0.97 : 1.03)).toFixed(2);
-      const tp = (parseFloat(price) * (signal === "Long" ? 1.05 : 0.95)).toFixed(2);
-      return { symbol, signal, price, sl, tp };
+  <script>
+    // Sample signals with extra indicators, smart money and fakeout flags
+    const signals = {
+      "1h": [
+        { symbol: "BTCUSDT", direction: "Short", price: 104890.50, sl: 106988.31, tp: 100694.88,
+          indicators: { RSI: 65, MACD: 'Bearish', SMA50: 105000, SMA200: 103500 },
+          smartMoney: true, fakeout: false },
+        { symbol: "ETHUSDT", direction: "Short", price: 2512.45, sl: 2562.70, tp: 2411.95,
+          indicators: { RSI: 58, MACD: 'Bearish', SMA50: 2520, SMA200: 2450 },
+          smartMoney: false, fakeout: true },
+        { symbol: "XRPUSDT", direction: "Long", price: 2.16, sl: 2.12, tp: 2.25,
+          indicators: { RSI: 40, MACD: 'Bullish', SMA50: 2.10, SMA200: 2.05 },
+          smartMoney: true, fakeout: false }
+      ],
+      "4h": [
+        { symbol: "BTCUSDT", direction: "Long", price: 104500.00, sl: 103000.00, tp: 108000.00,
+          indicators: { RSI: 45, MACD: 'Bullish', SMA50: 104200, SMA200: 102500 },
+          smartMoney: true, fakeout: false },
+        { symbol: "ETHUSDT", direction: "Short", price: 2500.00, sl: 2600.00, tp: 2400.00,
+          indicators: { RSI: 70, MACD: 'Bearish', SMA50: 2550, SMA200: 2490 },
+          smartMoney: false, fakeout: false }
+      ],
+      "1d": [
+        { symbol: "BTCUSDT", direction: "Long", price: 101000.00, sl: 97000.00, tp: 110000.00,
+          indicators: { RSI: 50, MACD: 'Bullish', SMA50: 100000, SMA200: 95000 },
+          smartMoney: true, fakeout: false },
+        { symbol: "ETHUSDT", direction: "Long", price: 2400.00, sl: 2200.00, tp: 2700.00,
+          indicators: { RSI: 55, MACD: 'Bullish', SMA50: 2350, SMA200: 2200 },
+          smartMoney: false, fakeout: false }
+      ]
+    };
+
+    // Store current timeframe signals here so we can update live prices
+    let currentSignals = [];
+    let currentTimeframe = "1h";
+
+    // Function to simulate price fluctuation around the base price
+    function simulateLivePrice(basePrice) {
+      const volatility = basePrice * 0.005; // 0.5% volatility
+      const change = (Math.random() * volatility * 2) - volatility; // random between -volatility and +volatility
+      return +(basePrice + change).toFixed(2);
     }
 
-    function loadSignals() {
-      let html = "";
-      coins.forEach((coin) => {
-        const data = generateSignal(coin);
-        html += `
-          <div class="coin">
-            <div><strong>${data.symbol}</strong> <span class="signal">(${data.signal})</span></div>
-            <div class="live-price">Price: $<span id="${data.symbol}-price">${data.price}</span></div>
-            <div>SL: $${data.sl} | TP: $${data.tp}</div>
-            <button class="copy-btn" onclick="copySignal('${data.symbol}: ${data.signal} @ $${data.price}')">Copy Signal</button>
+    // Render signals UI
+    function showSignals(timeframe, event) {
+      currentTimeframe = timeframe;
+      currentSignals = signals[timeframe].map(s => ({ ...s })); // deep copy so we can update prices
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      renderSignals();
+    }
+
+    // Render signal boxes
+    function renderSignals() {
+      const container = document.getElementById("signalContainer");
+      container.innerHTML = "";
+
+      currentSignals.forEach((s, i) => {
+        if (s.fakeout) {
+          container.innerHTML += `
+            <div class="signal-box" style="border-color:#dc2626;">
+              <h3>${s.symbol}</h3>
+              <div class="fakeout-alert">Fakeout ⚠️</div>
+              <p class="signal-detail">Signal temporarily invalid due to fake breakout.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML += `
+          <div class="signal-box" id="signal-${i}">
+            <h3>${s.symbol} ${s.smartMoney ? '<span class="smart-money">💰 Smart Money</span>' : ''}</h3>
+            <p class="signal-detail">Signal: <b>${s.direction}</b></p>
+            <p class="signal-detail">Price: <span class="live-price" id="live-price-${i}">$${s.price}</span></p>
+            <p class="signal-detail">SL: $${s.sl} | TP: $${s.tp}</p>
+            <div class="indicator-list">
+              <p>RSI: ${s.indicators.RSI}</p>
+              <p>MACD: ${s.indicators.MACD}</p>
+              <p>SMA50: $${s.indicators.SMA50}</p>
+              <p>SMA200: $${s.indicators.SMA200}</p>
+            </div>
           </div>
         `;
       });
-      document.getElementById("signal-container").innerHTML = html;
     }
 
-    function copySignal(text) {
-      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
-    }
+    // Update live prices every 5 seconds
+    function updateLivePrices() {
+      currentSignals.forEach((s, i) => {
+        if (s.fakeout) return; // skip fakeouts
 
-    loadSignals();
-    setInterval(loadSignals, 60000); // Refresh signals every 60s
-  </script></body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Crypto Signal Tool - Top 20 Futures</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: sans-serif; background: #111; color: #fff; text-align: center; }
-    h1 { color: #00ff99; }
-    .coin { border: 1px solid #444; margin: 10px; padding: 10px; border-radius: 10px; background: #222; }
-    .long { color: #00ff00; }
-    .short { color: #ff3333; }
-    .neutral { color: #999; }
-  </style>
-</head>
-<body>
-  <h1>🔁 Crypto Future Signals - 1H</h1>
-  <div id="signals">Loading...</div>
-
-  <script>
-    const coins = ["BTCUSDT","ETHUSDT","BNBUSDT","XRPUSDT","SOLUSDT","DOGEUSDT","ADAUSDT","AVAXUSDT","DOTUSDT","TRXUSDT","MATICUSDT","SHIBUSDT","LTCUSDT","BCHUSDT","LINKUSDT","UNIUSDT","XLMUSDT","NEARUSDT","ICPUSDT","FILUSDT"];
-
-    async function fetchData(symbol) {
-      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=1h&limit=50`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.map(c => ({
-        time: c[0],
-        open: parseFloat(c[1]),
-        high: parseFloat(c[2]),
-        low: parseFloat(c[3]),
-        close: parseFloat(c[4])
-      }));
-    }
-
-    function calculateEMA(data, period) {
-      const k = 2 / (period + 1);
-      let emaArray = [];
-      let ema = data[0].close;
-      emaArray.push(ema);
-      for (let i = 1; i < data.length; i++) {
-        ema = data[i].close * k + ema * (1 - k);
-        emaArray.push(ema);
-      }
-      return emaArray;
-    }
-
-    function calculateRSI(data, period = 14) {
-      let gains = 0, losses = 0;
-      for (let i = 1; i <= period; i++) {
-        const change = data[i].close - data[i - 1].close;
-        if (change > 0) gains += change;
-        else losses -= change;
-      }
-      let avgGain = gains / period;
-      let avgLoss = losses / period;
-      const rsiArray = [];
-      rsiArray[period] = 100 - (100 / (1 + avgGain / avgLoss));
-
-      for (let i = period + 1; i < data.length; i++) {
-        const change = data[i].close - data[i - 1].close;
-        const gain = Math.max(0, change);
-        const loss = Math.max(0, -change);
-        avgGain = (avgGain * (period - 1) + gain) / period;
-        avgLoss = (avgLoss * (period - 1) + loss) / period;
-        rsiArray[i] = 100 - (100 / (1 + avgGain / avgLoss));
-      }
-      return rsiArray;
-    }
-
-    function getSignal(data) {
-      const ema = calculateEMA(data, 10);
-      const rsi = calculateRSI(data, 14);
-      const last = data.length - 1;
-
-      let signal = "Neutral";
-      if (data[last].close > ema[last] && rsi[last] < 70 && rsi[last] > 50) signal = "Long";
-      if (data[last].close < ema[last] && rsi[last] > 30 && rsi[last] < 50) signal = "Short";
-
-      return {
-        type: signal,
-        price: data[last].close.toFixed(2),
-        sl: (signal === "Long") ? (data[last].close * 0.98).toFixed(2) : (data[last].close * 1.02).toFixed(2),
-        tp: (signal === "Long") ? (data[last].close * 1.04).toFixed(2) : (data[last].close * 0.96).toFixed(2)
-      };
-    }
-
-    async function updateSignals() {
-      const container = document.getElementById("signals");
-      container.innerHTML = "";
-      for (let coin of coins) {
-        try {
-          const data = await fetchData(coin);
-          const signal = getSignal(data);
-          const div = document.createElement("div");
-          div.className = "coin";
-          div.innerHTML = `
-            <h2>${coin}</h2>
-            <p>Signal: <span class="${signal.type.toLowerCase()}">${signal.type}</span></p>
-            <p>Price: $${signal.price}</p>
-            <p>TP: ${signal.tp}</p>
-            <p>SL: ${signal.sl}</p>
-          `;
-          container.appendChild(div);
-        } catch (e) {
-          console.log(coin + " error:", e.message);
+        // Simulate new price
+        s.price = simulateLivePrice(s.price);
+        // Update DOM
+        const priceEl = document.getElementById(`live-price-${i}`);
+        if (priceEl) {
+          priceEl.textContent = `$${s.price}`;
         }
-      }
+      });
     }
 
-    updateSignals();
-    setInterval(updateSignals, 60 * 1000); // auto update every 60 sec
+    // Start interval price updates
+    setInterval(updateLivePrices, 5000);
+
+    // Initial load
+    window.onload = () => showSignals('1h', { target: document.querySelector('.tab-btn.active') });
   </script>
 </body>
-</html>
+      </html>
