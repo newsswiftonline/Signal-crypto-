@@ -1,4 +1,55 @@
-<!DOCTYPE html>
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Signal Tool - Pro Version</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f0f0f; color: #fff; margin: 0; padding: 20px; }
+    h1 { color: #00ffcc; }
+    .coin { background: #1a1a1a; border-radius: 8px; padding: 15px; margin: 10px 0; }
+    .signal { font-weight: bold; color: #00ffcc; }
+    .live-price { font-size: 1.2em; color: #ffcc00; }
+    .copy-btn { background: #00ffcc; color: #000; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>📈 Crypto Future Signals (1H, 4H, 1D)</h1>
+  <div id="signal-container">Loading signals...</div>  <script>
+    const coins = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT", "LINKUSDT", "DOTUSDT"];
+
+    function generateSignal(symbol) {
+      const directions = ["Long", "Short", "Neutral"];
+      const price = (Math.random() * 50000 + 500).toFixed(2);
+      const signal = directions[Math.floor(Math.random() * directions.length)];
+      const sl = (parseFloat(price) * (signal === "Long" ? 0.97 : 1.03)).toFixed(2);
+      const tp = (parseFloat(price) * (signal === "Long" ? 1.05 : 0.95)).toFixed(2);
+      return { symbol, signal, price, sl, tp };
+    }
+
+    function loadSignals() {
+      let html = "";
+      coins.forEach((coin) => {
+        const data = generateSignal(coin);
+        html += `
+          <div class="coin">
+            <div><strong>${data.symbol}</strong> <span class="signal">(${data.signal})</span></div>
+            <div class="live-price">Price: $<span id="${data.symbol}-price">${data.price}</span></div>
+            <div>SL: $${data.sl} | TP: $${data.tp}</div>
+            <button class="copy-btn" onclick="copySignal('${data.symbol}: ${data.signal} @ $${data.price}')">Copy Signal</button>
+          </div>
+        `;
+      });
+      document.getElementById("signal-container").innerHTML = html;
+    }
+
+    function copySignal(text) {
+      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
+    }
+
+    loadSignals();
+    setInterval(loadSignals, 60000); // Refresh signals every 60s
+  </script></body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
