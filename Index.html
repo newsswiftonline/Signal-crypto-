@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crypto Signal Tool - Top 20 Futures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; background: #111; color: #fff; text-align: center; }
+    h1 { color: #00ff99; }
+    .coin { border: 1px solid #444; margin: 10px; padding: 10px; border-radius: 10px; background: #222; }
+    .long { color: #00ff00; }
+    .short { color: #ff3333; }
+    .neutral { color: #999; }
+  </style>
+</head>
+<body>
+  <h1>🔁 Crypto Future Signals - 1H</h1>
+  <div id="signals">Loading...</div>
+
+  <script>
+    const coins = ["BTCUSDT","ETHUSDT","BNBUSDT","XRPUSDT","SOLUSDT","DOGEUSDT","ADAUSDT","AVAXUSDT","DOTUSDT","TRXUSDT","MATICUSDT","SHIBUSDT","LTCUSDT","BCHUSDT","LINKUSDT","UNIUSDT","XLMUSDT","NEARUSDT","ICPUSDT","FILUSDT"];
+
+    async function fetchData(symbol) {
+      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=1h&limit=50`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.map(c => ({
+        time: c[0],
+        open: parseFloat(c[1]),
+        high: parseFloat(c[2]),
+        low: parseFloat(c[3]),
+        close: parseFloat(c[4])
+      }));
+    }
+
+    function calculateEMA(data, period) {
+      const k = 2 / (period + 1);
+      let emaArray = [];
+      let ema = data[0].close;
+      emaArray.push(ema);
+      for (let i = 1; i < data.length; i++) {
+        ema = data[i].close * k + ema * (1 - k);
+        emaArray.push(ema);
+      }
+      return emaArray;
+    }
+
+    function calculateRSI(data, period = 14) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const change = data[i].close - data[i - 1].close;
+        if (change > 0) gains += change;
+        else losses -= change;
+      }
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+      const rsiArray = [];
+      rsiArray[period] = 100 - (100 / (1 + avgGain / avgLoss));
+
+      for (let i = period + 1; i < data.length; i++) {
+        const change = data[i].close - data[i - 1].close;
+        const gain = Math.max(0, change);
+        const loss = Math.max(0, -change);
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
+        rsiArray[i] = 100 - (100 / (1 + avgGain / avgLoss));
+      }
+      return rsiArray;
+    }
+
+    function getSignal(data) {
+      const ema = calculateEMA(data, 10);
+      const rsi = calculateRSI(data, 14);
+      const last = data.length - 1;
+
+      let signal = "Neutral";
+      if (data[last].close > ema[last] && rsi[last] < 70 && rsi[last] > 50) signal = "Long";
+      if (data[last].close < ema[last] && rsi[last] > 30 && rsi[last] < 50) signal = "Short";
+
+      return {
+        type: signal,
+        price: data[last].close.toFixed(2),
+        sl: (signal === "Long") ? (data[last].close * 0.98).toFixed(2) : (data[last].close * 1.02).toFixed(2),
+        tp: (signal === "Long") ? (data[last].close * 1.04).toFixed(2) : (data[last].close * 0.96).toFixed(2)
+      };
+    }
+
+    async function updateSignals() {
+      const container = document.getElementById("signals");
+      container.innerHTML = "";
+      for (let coin of coins) {
+        try {
+          const data = await fetchData(coin);
+          const signal = getSignal(data);
+          const div = document.createElement("div");
+          div.className = "coin";
+          div.innerHTML = `
+            <h2>${coin}</h2>
+            <p>Signal: <span class="${signal.type.toLowerCase()}">${signal.type}</span></p>
+            <p>Price: $${signal.price}</p>
+            <p>TP: ${signal.tp}</p>
+            <p>SL: ${signal.sl}</p>
+          `;
+          container.appendChild(div);
+        } catch (e) {
+          console.log(coin + " error:", e.message);
+        }
+      }
+    }
+
+    updateSignals();
+    setInterval(updateSignals, 60 * 1000); // auto update every 60 sec
+  </script>
+</body>
+</html>
